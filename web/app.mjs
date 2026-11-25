@@ -1,37 +1,32 @@
-import { cleanLines } from './model.mjs';
-const input = document.querySelector('#input');
-const output = document.querySelector('#output');
-const status = document.querySelector('#status');
-const copy = document.querySelector('#copy');
-function update() {
-  const result = cleanLines(input.value);
-  output.value = result.text;
-  status.textContent = `${result.count} unique ${result.count === 1 ? 'line' : 'lines'}; ${result.removed} ${result.removed === 1 ? 'duplicate' : 'duplicates'} removed.`;
-  copy.disabled = result.count === 0;
+import {compareMove,validateScenario,csvCell} from './model.mjs';
+const $=id=>document.getElementById(id),key='coolcode:movebench:scenario';let config,benchmarks,result;
+const money=n=>n==null?'—':new Intl.NumberFormat('en-CA',{style:'currency',currency:'CAD',maximumFractionDigits:0}).format(n);
+function field(label,id,type='number',value='',options={}){const wrap=document.createElement('div');wrap.className='field';const lab=document.createElement('label');lab.htmlFor=id;lab.textContent=label;const input=document.createElement(type==='select'?'select':'input');input.id=id;if(type==='select'){for(const [v,text] of options.items){const o=document.createElement('option');o.value=v;o.textContent=text;input.append(o);}}else{input.type=type;if(type==='number'){input.min='0';input.max=String(options.max??10000000);input.step=options.step??'0.01';input.inputMode='decimal';}if(type==='text')input.maxLength=120;}input.value=value;input.addEventListener('input',calculate);wrap.append(lab,input);return wrap;}
+function buildForms(){
+ $('places').replaceChildren(...config.places.map(p=>{const o=document.createElement('option');o.value=p.name;return o;}));
+ const regions=[...new Set(benchmarks?.profiles.map(p=>p.geography)||[])].sort();
+ for(const [side,title] of [['current','Current place'],['proposed','Proposed place']]){
+ const panel=document.createElement('section');panel.className='panel';const heading=document.createElement('h2');heading.textContent=title;panel.append(heading);
+ panel.append(field('Place / scenario name',side+'-place','text',side==='current'?'Current place':'Proposed place'));
+ const grid=document.createElement('div');grid.className='grid';grid.append(field('Gross pay (CAD)',side+'-pay'),field('Pay period',side+'-period','select','annual',{items:[['annual','Annual salary'],['hourly','Hourly rate']]}));panel.append(grid);
+ const work=document.createElement('div');work.className='grid';work.append(field('Paid hours per week',side+'-hours','number',40,{max:168}),field('Paid weeks per year',side+'-weeks','number',52,{max:52.18}));panel.append(work);
+ const sub=document.createElement('h3');sub.textContent='Monthly household expenses (CAD)';sub.style.marginTop='1.2rem';panel.append(sub);const note=document.createElement('p');note.className='hint';note.textContent='Enter every listed cost, using 0 when it does not apply.';panel.append(note);
+ for(const c of config.costs){const wrap=field(c.label,side+'-'+c.id);if(c.hint){const hint=document.createElement('p');hint.className='hint';hint.textContent=c.hint;wrap.append(hint);}panel.append(wrap);}
+ const details=document.createElement('details'),sum=document.createElement('summary');sum.textContent='Commuting time & reference region';details.append(sum,field('Weekly commute time (hours)',side+'-commuteHours','number',0,{max:168}),field('Regional context only',side+'-region','select','',{items:[['','No reference region'],...regions.map(r=>[r,r])]}));panel.append(details);$('scenarios').append(panel);
+ $(side+'-place').setAttribute('list','places');$(side+'-place').addEventListener('change',()=>{const p=config.places.find(p=>p.name===$(side+'-place').value);if(p)$(side+'-region').value=p.region;calculate();});
+ }
 }
-input.addEventListener('input', update);
-document.querySelector('#sample').addEventListener('click', () => {
-  input.value = '  Halifax\nLangley\nHalifax\n\nVancouver  ';
-  update();
-});
-document.querySelector('#clear').addEventListener('click', () => {
-  input.value = '';
-  update();
-  input.focus();
-});
-if (navigator.clipboard && window.isSecureContext) {
-  copy.hidden = false;
-  copy.disabled = true;
-  copy.addEventListener('click', async () => {
-    try {
-      await navigator.clipboard.writeText(output.value);
-      status.textContent = 'Result copied.';
-    } catch {
-      output.focus();
-      output.select();
-      status.textContent = 'Copy was unavailable. The result is selected so you can copy it manually.';
-    }
-  });
-}
-// Namespace future preference storage as coolcode:<tool-id>:<key>.
-// Do not persist pasted text or uploads by default.
+function state(){const s={schema_version:1,tool:'movebench',moving:$('moving').value,horizon:$('horizon').value};for(const side of ['current','proposed'])s[side]={place:$(side+'-place').value,region:$(side+'-region').value,pay:$(side+'-pay').value,payPeriod:$(side+'-period').value,hours:$(side+'-hours').value,weeks:$(side+'-weeks').value,commuteHours:$(side+'-commuteHours').value,costs:Object.fromEntries(config.costs.map(c=>[c.id,$(side+'-'+c.id).value]))};return s;}
+function renderBenchmarks(s){$('benchmarks').replaceChildren(...['current','proposed'].map(side=>{const box=document.createElement('div'),heading=document.createElement('h3');heading.textContent=s[side].place||side;box.append(heading);const rows=benchmarks?.profiles.filter(p=>p.geography===s[side].region)||[];const reference=rows.sort((a,b)=>b.year.localeCompare(a.year))[0];const p=document.createElement('p');p.className='hint';if(!reference){p.textContent='Choose a reference region in the scenario’s commuting & reference section.';box.append(p);return box;}p.textContent=`${reference.geography} · ${reference.year} survey · all households`;box.append(p);for(const c of benchmarks.categories){const line=document.createElement('p'),value=reference.values[c.id];line.textContent=`${c.label}: ${money(value?.annual==null?null:value.annual/12)} / month${value?.status?' ('+value.status+')':''}`;box.append(line);}return box;}));}
+function calculate(){if(!config)return;const s=state();renderBenchmarks(s);try{result=compareMove(s,config.costs);$('status').textContent='Comparison ready. Amounts stay in this browser; all salary results are before income tax and payroll deductions.';$('status').classList.remove('error');$('cost-difference').textContent=money(result.costDifference);$('pay-difference').textContent=money(result.payDifference);$('difference').textContent=money(result.difference);$('current-label').textContent=s.current.place||'Current';$('proposed-label').textContent=s.proposed.place||'Proposed';const rows=[['Annual gross pay',result.current.annualPay,result.proposed.annualPay],...config.costs.map(c=>[c.label,result.current.costs[c.id],result.proposed.costs[c.id]]),['Monthly expenses',result.current.monthlyCosts,result.proposed.monthlyCosts],['Monthly gross pay minus listed costs',result.current.beforeDeductions,result.proposed.beforeDeductions],['Gross pay per work + commute hour',result.current.payPerCommittedHour,result.proposed.payPerCommittedHour]];$('breakdown').replaceChildren(...rows.map(row=>{const tr=document.createElement('tr');row.forEach((v,i)=>{const td=document.createElement('td');td.textContent=i?money(v):v;if(i)td.className='number';tr.append(td);});return tr;}));$('equivalent').textContent=`${money(result.equivalentSalary)} a year at the proposed place offsets the ongoing expense difference. Including ${money(result.moving)} of moving costs over ${result.horizon} months: ${money(result.equivalentSalaryWithMove)} a year.`;$('recovery').textContent=result.recoveryMonths===0?'No moving cost entered.':result.recoveryMonths==null?'The entered monthly difference does not recover the moving cost.':`${result.recoveryMonths} months to recover the moving cost, before deductions.`;$('horizon-result').textContent=`Over ${result.horizon} months, the difference including moving costs is ${money(result.overHorizon)}, before deductions.`;
+ }catch(e){result=null;$('status').textContent=e.message;$('status').classList.add('error');for(const id of ['cost-difference','pay-difference','difference','equivalent','recovery','horizon-result'])$(id).textContent='—';$('breakdown').replaceChildren();}}
+function restore(s,validate=true){if(validate)validateScenario(s,config.costs);for(const side of ['current','proposed']){const p=s[side];for(const [name,prop] of [['place','place'],['pay','pay'],['period','payPeriod'],['hours','hours'],['weeks','weeks'],['commuteHours','commuteHours'],['region','region']])$(side+'-'+name).value=p[prop]??'';for(const c of config.costs)$(side+'-'+c.id).value=p.costs[c.id]??'';}$('moving').value=s.moving;$('horizon').value=s.horizon;calculate();}
+function download(text,name,type){const url=URL.createObjectURL(new Blob([text],{type})),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+function action(id,fn){$(id).addEventListener('click',()=>{try{fn();}catch(e){$('save-status').textContent=e.message;}});}
+function validState(){const s=state();validateScenario(s,config.costs);return s;}
+async function start(){try{const c=await fetch('./config.json');if(!c.ok)throw new Error('Configuration could not be loaded. Reload to try again.');config=await c.json();try{const b=await fetch('./data/benchmarks.json');if(b.ok){const candidate=await b.json();if(Array.isArray(candidate.profiles)&&Array.isArray(candidate.categories))benchmarks=candidate;}}catch{}buildForms();$('benchmark-date').textContent=benchmarks?`Reference source checked ${new Date(benchmarks.checked_at).toLocaleString()}. Check date is not the survey year.`:'Reference snapshot unavailable; your comparison still works.';for(const id of ['moving','horizon'])$(id).addEventListener('input',calculate);calculate();
+ action('example',()=>{restore(config.example,false);$('example-note').textContent=config.example.label;});action('reset',()=>{for(const side of ['current','proposed']){for(const id of ['pay',...config.costs.map(c=>c.id)])$(side+'-'+id).value='';$(side+'-place').value=side==='current'?'Current place':'Proposed place';$(side+'-region').value='';$(side+'-period').value='annual';$(side+'-hours').value='40';$(side+'-weeks').value='52';$(side+'-commuteHours').value='0';}$('moving').value='0';$('horizon').value='24';$('example-note').textContent='No prices or salaries are assumed.';calculate();});
+ action('save',()=>{localStorage.setItem(key,JSON.stringify(validState()));$('save-status').textContent='Saved in this browser only.';});action('load',()=>{const saved=localStorage.getItem(key);if(!saved)throw new Error('No saved scenario on this browser.');restore(JSON.parse(saved));$('example-note').textContent='Your saved scenario';$('save-status').textContent='Saved scenario loaded.';});action('forget',()=>{localStorage.removeItem(key);$('save-status').textContent='Saved scenario deleted. Start blank to clear current entries.';});action('export',()=>download(JSON.stringify(validState(),null,2),'movebench-scenario.json','application/json'));action('import',()=>$('file').click());$('file').addEventListener('change',async()=>{try{const f=$('file').files[0];if(!f)return;if(f.size>100000)throw new Error('Scenario files must be smaller than 100 KB.');restore(JSON.parse(await f.text()));$('example-note').textContent='Imported scenario';$('save-status').textContent='Imported locally; not saved automatically.';}catch(e){$('save-status').textContent=e.message;}finally{$('file').value='';}});
+ action('csv',()=>{const s=validState();const rows=[['Measure',s.current.place,s.proposed.place,'Units / interpretation'],['Gross salary',result.current.annualPay,result.proposed.annualPay,'CAD/year before deductions'],...config.costs.map(c=>[c.label,result.current.costs[c.id],result.proposed.costs[c.id],'CAD/month']),['Monthly expenses',result.current.monthlyCosts,result.proposed.monthlyCosts,'CAD/month'],['Monthly difference before deductions','',result.difference,'CAD/month'],['One-time moving cost','',result.moving,'CAD'],['Difference over '+result.horizon+' months','',result.overHorizon,'CAD before deductions']];download(rows.map(r=>r.map(csvCell).join(',')).join('\r\n'),'movebench-comparison.csv','text/csv');});action('print',()=>print());
+ }catch(e){$('status').textContent=e.message;$('status').classList.add('error');}}
+start();

@@ -1,21 +1,16 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
-import { cleanLines } from '../web/model.mjs';
-test('trims, removes blanks and preserves first-seen order', () => {
-  assert.deepEqual(cleanLines('  Halifax\nLangley\nHalifax\n\nVancouver  '), {
-    text: 'Halifax\nLangley\nVancouver', count: 3, removed: 1,
-  });
-});
-test('supports Windows and old Mac line endings', () => {
-  assert.equal(cleanLines('a\r\nb\ra').text, 'a\nb');
-});
-test('empty text and whitespace produce an empty result', () => {
-  assert.deepEqual(cleanLines(' \n\t'), { text: '', count: 0, removed: 0 });
-});
-test('preserves case and Unicode', () => {
-  assert.equal(cleanLines('Québec\nquébec\n東京\nQuébec').text, 'Québec\nquébec\n東京');
-});
-test('treats markup as ordinary text', () => {
-  assert.equal(cleanLines('<script>alert(1)</script>\n<script>alert(1)</script>').text, '<script>alert(1)</script>');
-});
-test('rejects non-text input', () => { assert.throws(() => cleanLines(null), TypeError); });
+import test from 'node:test';import assert from 'node:assert/strict';
+import {number,annualPay,compareMove,validateScenario,csvCell} from '../web/model.mjs';
+const cats=[{id:'rent',label:'Rent'},{id:'food',label:'Food'}];
+const place=(pay,rent)=>({place:'Example',region:'',pay,payPeriod:'annual',hours:40,weeks:52,commuteHours:5,costs:{rent,food:500}});
+const state=()=>({schema_version:1,tool:'movebench',current:place(72000,2000),proposed:place(66000,1200),moving:3000,horizon:24});
+test('compares gross earnings and costs consistently',()=>{const r=compareMove(state(),cats);assert.equal(r.payDifference,-500);assert.equal(r.costDifference,-800);assert.equal(r.difference,300);assert.equal(r.equivalentSalary,62400);assert.equal(r.equivalentSalaryWithMove,63900);assert.equal(r.overHorizon,4200);assert.equal(r.recoveryMonths,10);});
+test('hourly pay uses paid hours and weeks',()=>{assert.equal(annualPay({...place(25,0),payPeriod:'hourly',hours:30,weeks:48}),36000);});
+test('zero paid hours rejected for a nonzero hourly offer; annual pay remains valid',()=>{assert.throws(()=>annualPay({...place(25,0),payPeriod:'hourly',hours:0}));assert.equal(annualPay({...place(0,0),payPeriod:'hourly',hours:0}),0);const s=state();s.current.hours=0;s.current.commuteHours=0;assert.equal(compareMove(s,cats).current.payPerCommittedHour,null);});
+test('no false moving cost recovery for zero or negative benefit',()=>{const s=state();s.proposed=place(72000,2000);assert.equal(compareMove(s,cats).recoveryMonths,null);s.moving=0;assert.equal(compareMove(s,cats).recoveryMonths,0);});
+test('requires explicit input rather than treating unknown expense as zero',()=>{assert.throws(()=>number('','Rent'));const s=state();delete s.current.costs.food;assert.throws(()=>compareMove(s,cats));});
+test('invalid times and amounts rejected',()=>{for(const v of [-1,'no',Infinity,{},''])assert.throws(()=>number(v,'Input'));const s=state();s.current.hours=165;s.current.commuteHours=5;assert.throws(()=>compareMove(s,cats));s.current.hours=40;s.horizon=1.5;assert.throws(()=>compareMove(s,cats));});
+test('expanded cost configuration participates in totals',()=>{const s=state();s.current.costs.pets=70;s.proposed.costs.pets=90;assert.equal(compareMove(s,[...cats,{id:'pets',label:'Pets'}]).costDifference,-780);});
+test('import schema and place bounds enforced',()=>{assert.equal(validateScenario(state(),cats).tool,'movebench');assert.throws(()=>validateScenario({...state(),tool:'other'},cats));const s=state();s.current.place='a'.repeat(121);assert.throws(()=>validateScenario(s,cats));});
+test('CSV avoids formulas without changing numeric negative values',()=>{assert.equal(csvCell('=x'),'"\'=x"');assert.equal(csvCell(-2),'"-2"');});
+
+test('equivalent salary is floored only after moving cost adjustment',()=>{const s=state();s.current=place(12000,3000);s.proposed=place(0,1000);s.moving=1500;s.horizon=12;const r=compareMove(s,cats);assert.equal(r.equivalentSalary,0);assert.equal(r.equivalentSalaryWithMove,0);});

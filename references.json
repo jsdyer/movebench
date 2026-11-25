@@ -1,0 +1,30 @@
+{
+  "tables": [
+    {
+      "id": "11100222",
+      "mode": "geography",
+      "label": "Province or region",
+      "dimension": null
+    }
+  ],
+  "categories": [
+    {
+      "id": "food",
+      "label": "Food",
+      "source": "Food expenditures",
+      "hint": "Groceries, restaurants, snacks and meal-delivery services."
+    },
+    {
+      "id": "operations",
+      "label": "Household operations",
+      "source": "Household operations",
+      "hint": "Phone, internet, digital services, child care, pets, cleaning and garden supplies/services."
+    },
+    {
+      "id": "transport",
+      "label": "Transportation",
+      "source": "Transportation",
+      "hint": "Vehicle purchases/leases, fuel, insurance, maintenance, transit and flights. Large purchases can make averages uneven."
+    }
+  ]
+}

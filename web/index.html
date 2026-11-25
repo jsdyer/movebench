@@ -1,34 +1,12 @@
-<!doctype html>
-<html lang="en-CA">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="{{DESCRIPTION}}">
-  <title>{{TITLE}} · CoolCode</title>
-  <link rel="stylesheet" href="./style.css">
-  <script type="module" src="./app.mjs"></script>
-  {{VISIT_COUNTER}}
-</head>
-<body data-tool-id="{{TOOL_ID}}">
-  <a class="skip" href="#main">Skip to content</a>
-  <header><a href="https://coolcode.ca/">← CoolCode.ca</a><a href="{{SOURCE_URL}}">Source &amp; instructions ↗</a></header>
-  <main id="main">
-    <p class="eyebrow">Browser tool starter</p>
-    <h1>{{TITLE}}</h1>
-    <p class="intro">{{DESCRIPTION}}</p>
-    <section aria-labelledby="example-title">
-      <h2 id="example-title">Clean a list</h2>
-      <p>Trim spaces, skip blank lines and remove exact duplicates. Capitalization stays distinct.</p>
-      <div class="panels">
-        <div><label for="input">Your lines</label><textarea id="input" rows="10" maxlength="100000" spellcheck="false" placeholder="Paste one item per line"></textarea></div>
-        <div><label for="output">Cleaned lines</label><textarea id="output" rows="10" readonly spellcheck="false"></textarea></div>
-      </div>
-      <div class="actions"><button id="sample" type="button">Load example</button><button id="clear" type="button">Clear</button><button id="copy" type="button" hidden>Copy result</button></div>
-      <p id="status" role="status" aria-live="polite">Paste a list to begin.</p>
-      <noscript><p>This tool needs JavaScript to process your text. The source is available above.</p></noscript>
-    </section>
-    <aside aria-label="Privacy"><strong>Stays on your device.</strong> The browser processes your text in this tab. Reloading clears it.</aside>
-  </main>
-  <footer>Part of <a href="https://coolcode.ca/">the CoolCode collection</a>. {{ISSUE_LINK}}</footer>
-</body>
-</html>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="{{DESCRIPTION}}"><meta name="coolcode-tool" content="{{TOOL_ID}}"><title>Compare Moving Costs and Job Offers in Canada · CoolCode</title><link rel="stylesheet" href="./style.css">{{VISIT_COUNTER}}<script type="module" src="./app.mjs"></script></head><body>
+<header><nav><a class="brand" href="https://coolcode.ca/">COOLCODE</a><span>A private moving worksheet</span></nav><p class="eyebrow">Your places. Your actual costs.</p><h1>{{TITLE}}</h1><p class="lede">Would a move leave you better off? Compare job offers, housing and everyday expenses, then see how much the move itself changes the picture.</p></header>
+<main><div class="status" id="status" role="status">Enter your figures or load the clearly labelled example.</div><div class="actions"><button id="example" class="secondary">Try an illustrative example</button><button id="reset" class="secondary">Start blank</button><span class="hint" id="example-note">No prices or salaries are assumed.</span></div>
+<div class="grid" id="scenarios"></div>
+<section class="panel"><h2>The move itself</h2><div class="grid"><div class="field"><label for="moving">One-time moving costs (CAD)</label><input id="moving" type="number" min="0" max="10000000" step="0.01" inputmode="decimal" value="0"><p class="hint">Movers, travel, deposits you will not recover, setup fees and overlapping housing. Refundable deposits are a cash requirement, not necessarily a final expense.</p></div><div class="field"><label for="horizon">Compare over this many months</label><input id="horizon" type="number" min="1" max="600" step="1" value="24"><p class="hint">Constant pay and costs are assumed. This is a scenario, not a forecast.</p></div></div></section>
+<section class="panel" aria-labelledby="results-title"><h2 id="results-title">What changes each month</h2><p class="note"><strong>Before income tax and payroll deductions.</strong> Salaries are gross. The results below are not take-home pay or disposable income; changing provinces can change taxes and benefits.</p><div class="metrics"><div class="metric">Change in monthly expenses<strong class="value" id="cost-difference">—</strong><small>Proposed place minus current place</small></div><div class="metric">Change in monthly gross pay<strong class="value" id="pay-difference">—</strong><small>Annual pay divided by 12</small></div><div class="metric">Difference before deductions<strong class="value" id="difference">—</strong><small>Gross-pay change minus expense change</small></div></div>
+<div class="table-wrap"><table><thead><tr><th>Comparison</th><th class="number" id="current-label">Current place</th><th class="number" id="proposed-label">Proposed place</th></tr></thead><tbody id="breakdown"></tbody></table></div>
+<div class="grid" style="margin-top:1.3rem"><div><h3>Equivalent gross salary</h3><p id="equivalent">—</p><p class="hint">The salary that offsets the difference in listed expenses before taxes. It is not an after-tax salary recommendation.</p></div><div><h3>Moving-cost recovery</h3><p id="recovery">—</p><p id="horizon-result" class="hint"></p></div></div></section>
+<section class="panel"><h2>Keep your comparison</h2><div class="actions"><button id="save" class="secondary">Save on this device</button><button id="load" class="secondary">Load saved</button><button id="export" class="secondary">Export scenario</button><button id="import" class="secondary">Import scenario</button><button id="csv" class="secondary">Download comparison CSV</button><button id="print" class="secondary">Print</button><button id="forget" class="secondary">Delete saved</button><input id="file" class="file" type="file" accept="application/json,.json"></div><p class="hint" id="save-status" role="status">Nothing is stored until you choose Save. Exported files include your financial inputs.</p></section>
+<section class="panel"><h2>Published regional context</h2><p>These are provincial household spending averages from Statistics Canada. They describe the survey year, include households with no spending, and <strong>are not current city prices or suggested entries</strong>. They never replace your numbers above.</p><div class="grid" id="benchmarks"></div><p class="hint" id="benchmark-date"></p><a href="https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1110022201">View Statistics Canada table 11-10-0222-01</a></section>
+<section class="panel copy"><h2>Use the worksheet well</h2><p>Use an actual rental listing or mortgage estimate and the actual job offer. Add vehicle ownership, child care, insurance and any recurring costs that differ. For hourly pay, use paid hours per week and paid weeks per year; unpaid time off matters. All amounts are Canadian dollars.</p><details><summary>Assumptions and privacy</summary><p>The worksheet uses fixed inputs. It does not estimate taxes, investment returns, future inflation, relocation benefits, home appreciation or employment probability. Commuting time is optional context, not an expense unless you enter its monetary cost.</p><p>All scenario calculations happen on your device. No inputs or imported files are uploaded. Explicitly saved data stays in this browser until deleted. The app retrieves only its public configuration and regional reference snapshot. The shared CoolCode counter counts tool opens without financial inputs.</p></details></section>
+</main><datalist id="places"></datalist><footer><a href="https://coolcode.ca/">All tools</a><a href="{{SOURCE_URL}}">Source & documentation</a><a href="./data/benchmarks.json">Public reference snapshot</a>{{ISSUE_LINK}}</footer></body></html>

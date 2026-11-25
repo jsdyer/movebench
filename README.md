@@ -1,179 +1,74 @@
-# CoolCode browser tool template
+# Move Bench
 
-A starting point for independent tools at `coolcode.ca/<repo>/`: a working local-text
-example, responsive UI, Python standard-library build, Node tests, PR checks and Pages
-publication. No npm install is needed.
-
-## Using the example
+[Use Move Bench](https://coolcode.ca/movebench/) to compare job offers, housing, recurring expenses and one-time moving costs. Your financial inputs stay on your device. No account or API key is needed.
 
 <!-- coolcode:guide -->
-The first occurrence of each trimmed line keeps its place. Compare the output with the original text before copying the result.
+Enter actual pay and expenses for your current and proposed places. Move Bench separates the gross-pay change from the expense change, calculates an equivalent gross salary and shows moving-cost recovery. All salary comparisons are before income tax and payroll deductions; provincial household averages appear only as dated context and never fill your budget automatically.
 <!-- /coolcode:guide -->
 
-For a real tool, replace this paragraph with one or two plain-text sentences
-about an example, a limit or how to interpret the results. Keep the source,
-coverage, refresh behaviour and a worked example in this README as appropriate.
-When updating a tool, revise any details its behaviour has changed and keep the
-homepage's shorter data-source sentence in `tool.json` accurate.
-The hub imports the marked note into the catalogue README.
+## What it does
 
-## One-time template setup
+- Arbitrary place/scenario names, with Vancouver, Langley and Halifax starting suggestions.
+- Annual salary or hourly rate, paid hours and paid weeks. Zero or missing working hours cannot silently produce a meaningful hourly offer.
+- Configurable monthly expense categories, one-time moving cost and a 1–600 month comparison horizon.
+- Gross-pay change, expense change, equivalent annual gross salary and a simple moving-cost recovery period.
+- Optional commuting-time comparison: gross pay per work-and-commute hour.
+- Explicit local save/load/delete, JSON import/export, CSV and print.
+- Historical Statistics Canada provincial household-spending context, separately labelled and never used as a city price estimate.
 
-Enable **Settings → General → Template repository** here. This repository does not
-need Pages enabled: its workflow builds/tests but intentionally skips deployment.
-New copies also skip deployment until `scripts/init.py` sets the tool ID to match
-their repository name. This lets you create the repo before configuring Pages.
+The **Try an illustrative example** button loads hypothetical Vancouver/Halifax figures with a visible label. These figures are not market data, current rents or salary guidance. A blank worksheet assumes no prices; a required field must explicitly contain zero when it does not apply.
 
-## Start a new tool
+## Calculation meanings
 
-1. Select **Use this template → Create a new repository**, choose owner `jsdyer`,
-   a unique lowercase name such as `my-tool`, and public visibility.
-2. Clone the new repository. Use Python 3.12+ and Node 24+.
-3. Set the identity, using a slug that matches the repository name:
+Annual hourly pay = hourly rate × paid hours per week × paid weeks per year. Annual salary is used directly. Monthly pay = annual gross pay / 12.
 
-```sh
-python3 scripts/init.py my-tool --title "My Tool" --description "Describe what this tool does."
-```
+Monthly difference before deductions = (proposed monthly gross pay − current monthly gross pay) − (proposed listed expenses − current listed expenses).
 
-Review the category, tags and icon in `tool.json`. `access: "browser"` tells the main
-catalogue that the tool works immediately without installation. `--owner` supports a different
-GitHub owner, but only projects owned by `jsdyer` inherit the CoolCode domain.
+Equivalent gross salary = current annual gross salary + 12 × the monthly expense difference, floored at zero. The version including moving costs spreads those costs across the chosen horizon. Moving-cost recovery is shown only when the monthly difference is positive; it is rounded up to a whole month.
 
-4. Replace the example in `web/` and its tests. Update the privacy explanation,
-   source attribution and README to describe the real tool.
-5. Test and preview:
+**This is not take-home pay or disposable income.** Tax, payroll deductions, benefits, employment likelihood, inflation, investment returns and property appreciation are not estimated. Costs and pay stay constant over the scenario horizon. Province changes can materially affect taxes. Large refundable deposits may affect immediate cash requirements without being a permanent expense; the explanatory UI distinguishes this.
 
-```sh
-node --test tests/*.test.mjs
-python3 -m unittest discover -s tests -v
-python3 scripts/build.py
-python3 -m http.server 8000 --directory dist
-```
+## Sources and privacy
 
-Open `http://localhost:8000/`. The example trims lines, skips blanks and removes exact
-duplicates, preserving first-seen order and capitalization. It processes the text in tab memory. Update that explanation if your app behaves differently.
+The source for separate regional context is [Statistics Canada table 11-10-0222-01](https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1110022201), Survey of Household Spending, under the [Statistics Canada Open Licence](https://www.statcan.gc.ca/en/reference/licence). Initial downloads contain reference years through **2023**. Provincial household averages include all household types and non-spenders; they are not current local rents or complete cost-of-living indices. The snapshot retains quality flags, vectors, actual reference years, source links, check date and download hash. CoolCode is not endorsed by Statistics Canada.
 
-CI also tests the browser flow and mobile layout at a project subpath. Replace the
-sample assertions in `tests/browser_smoke.py` when implementing your own UI. To run
-that check locally (optional for ordinary preview):
-
-```sh
-python3 -m venv .venv
-. .venv/bin/activate
-python3 -m pip install -r tests/browser-requirements.txt
-python3 -m playwright install --with-deps chromium
-python3 tests/browser_smoke.py
-```
-
-Playwright is a test-only dependency; the app and its static build do not use it.
+No scenario values or imported files are sent to a server. Explicit storage uses `coolcode:movebench:scenario` in this browser. Delete saved removes that record; Start blank clears the active worksheet. Reloading loses unsaved input. Exports contain your personal financial data. The site retrieves its own public files and uses the shared aggregate-open counter, which excludes inputs.
 
 ## Expand or customize
 
-Every implemented tool should replace this section with its actual configuration
-path and a working example. A small `config.json` can hold default entities,
-query presets, source choices and request limits. Those defaults should be useful
-starting points, while visitors can enter other valid inputs whenever the source
-supports them. Keep provider limits explicit and separate from the starter list.
+`web/config.json` controls suggested place names/regions, monthly expense categories and the **explicitly illustrative** example. Visitors may enter any place name. Add a non-overlapping expense category with a unique `id`, `label` and optional `hint`; forms, totals and exports derive from this array. For example, add `pets` and then provide values in any example scenario. Existing imported scenarios missing a required new category must be completed rather than silently assuming zero.
 
-Derive counts, filters and item validation from the current data. Do not require
-exactly the initial number of items. Add a test that expands the configuration,
-and keep historical captures readable when their coverage differs from today's
-watchlist. Display the selected capture date accurately.
+`references.json` selects exact official table columns and contextual spending categories. Do not interpret provincial averages as local prices or auto-fill the worksheet from them. To change reference coverage, edit that file, run the refresh, review data and tests, then publish. Adding a place label alone needs no source refresh. The snapshot retains actual captured years, with the newest published year displayed for each selected region.
 
-Document which changes need only a normal code push and which also need a data
-refresh. Include the refresh command or exact GitHub workflow and input, followed
-by the publication step. A successful code build need not mean a new collection
-has been fetched. The starter itself has no external collection or refresh.
+## Build, refresh and deploy
 
-## Publish and register
-
-When the actual tool is ready, in the **new tool repository** set **Settings → Pages → Build and deployment →
-Source → GitHub Actions**. Push to `main`, or manually run **Browser tool · Check and
-publish** after enabling Pages. If the initial deployment ran before Pages was enabled,
-enable it and rerun. PRs only check/build and provide a downloadable preview artifact.
-
-Keep `{{VISIT_COUNTER}}` in the page head and `{{ISSUE_LINK}}` in the footer when replacing the starter UI. The build enables these for initialized CoolCode repositories. The shared counter records aggregate opens on coolcode.ca by public tool ID. Toolbox inputs and URL parameters are excluded. The issue link opens a reporting form with the tool already selected.
-
-Keep app-owned asset paths and module imports relative. Check `https://coolcode.ca/my-tool/`.
-Do not add a CNAME or set `coolcode.ca` as this project's custom domain; the account
-site supplies it. Only successful `main` builds deploy.
-
-After verifying the app, copy the reviewed object from `tool.json` into `data/tools.json`
-in [the main site](https://github.com/jsdyer/jsdyer.github.io). Each tool still builds
-independently. The hub generates the visitor Worker ID list, watchdog targets and sitemap; deploy and verify the affected services before considering the release complete. Update the hub record when listing metadata changes; the hub is the
-authority for discovery. Every change must follow the [mandatory lifecycle](https://github.com/jsdyer/jsdyer.github.io/blob/main/docs/tool-lifecycle.md). App-only changes may leave integrations unchanged, but this must be checked; documentation, source fields, schedules and registration changes also require the hub update.
-
-The main site separates **Use in your browser** from **Install yourself**. An app
-that asks for a file is still a browser tool. Standalone Linux packages should start
-in their own repositories with their own build/release workflow, rather than copying
-this browser-only scaffold. Their hub record uses `access: "install"`, links to an
-installation guide, and includes `requirements`.
-
-## Files
-
-| Path | Purpose |
-| --- | --- |
-| `tool.json` | Page metadata and a ready-to-copy catalogue record |
-| `web/` | HTML, responsive CSS, DOM interactions and separate model logic |
-| `scripts/build.py` | Escape metadata and build `web/` into `dist/` |
-| `scripts/init.py` | Set a new project's identity |
-| `scripts/add_schedule_guard.py` | Add an opt-in guard for explicitly selected scheduled collectors |
-| `tests/` | Application and builder tests |
-| `.github/workflows/pages.yml` | Check PRs and publish successful main builds |
-| `AGENTS.md` | Instructions for future coding work |
-
-Namespace optional storage as `coolcode:<tool-id>:<key>`; CoolCode paths share a
-browser origin. Don't save pasted text/uploads by default. Document external APIs
-and send only the information needed for the selected action. Never embed secrets.
-
-Scheduled refresh is opt-in. Validate source data before deploying, display its date,
-and preserve the last good deployment on failure. Public-repository schedules can
-stop after 60 days without repository activity.
-
-When adding a collector with `on.schedule`, also keep `workflow_dispatch` available
-for the independent Linux server scheduler. Generate a separate schedule guard,
-listing every scheduled collector in the repository:
+Python 3.12+ and Node 24+; no app dependencies or secrets.
 
 ```sh
-python3 scripts/add_schedule_guard.py --repository jsdyer/my-tool .github/workflows/pages.yml
+python3 scripts/refresh.py
+node --test tests/*.test.mjs
+python3 -m unittest discover -s tests -v
+python3 scripts/build.py
 ```
 
-Replace the repository and workflow paths with the real values. Review the generated
-allowlist, commit `.github/workflows/schedule-guard.yml`, and verify its first push
-run. Re-run the command with the complete list when adding, renaming or removing a
-collector. The guard runs weekly, independently of collector failures, and calls
-GitHub's enable-workflow API for those paths and itself. It restores workflows
-disabled for inactivity and preserves manually disabled workflows. It does not
-fetch data, create dummy commits or change source/check timestamps.
+Build is offline. Refresh downloads and validates the official CSV ZIP, and atomically replaces `web/data/benchmarks.json` only after schema, dimension, unit and coverage validation. Failed source checks preserve the previous snapshot. If the public context file cannot be loaded in a browser, the private calculator still works.
 
-This is an interim mitigation: GitHub does not document active-workflow renewal as
-a permanent exemption, and scheduled runs can be delayed or dropped. Register the
-collector and its freshness expectations in the independent server scheduler too.
-Document its real data check, collection and publication steps in the tool README.
-The starter has no scheduled collector and therefore ships no recurring guard job.
+**Browser tool · Check and publish** (`.github/workflows/pages.yml`) refreshes on main pushes, manual dispatch, and monthly at **14:47 UTC on the 20th**. PRs test the committed snapshot without fetching/deploying. Failed collection blocks publication, retaining the previous Pages deployment. Successful refresh data is included in the Pages artifact; it is not automatically committed. Every subsequent main publication rechecks the source rather than replacing fresh public data with an old seed.
 
-Templates don't propagate future edits automatically. Adopt fixes explicitly and
-consider a versioned reusable workflow once several tools confirm the shared process.
-Choose and add the intended software license before distributing a new project.
+Set Pages source to **GitHub Actions**. CI smoke tests the actual example, arbitrary place labels, invalid inputs, persistence and mobile layout at a repository subpath.
 
-## Search metadata
+Watchdog integration contract:
 
-Initialize the page title with a concise task phrase, while keeping the creative
-app name in `--title`:
+- repository: `jsdyer/movebench`
+- workflow: `pages.yml`; manual dispatch has no required inputs
+- collection step: `Refresh validated Statistics Canada spending data`
+- freshness URL: `https://coolcode.ca/movebench/data/status.json`
+- freshness field: `checked_at`; suggested maximum age **40 days**
+
+The separate inactivity guard allowlists `pages.yml` and itself. Regenerate after workflow changes:
 
 ```sh
-python3 scripts/init.py line-cleaner --title "Line Cleaner" --description "Trim lines and remove exact duplicates in your browser." --search-title "Trim Lines & Remove Duplicates"
+python3 scripts/add_schedule_guard.py --repository jsdyer/movebench .github/workflows/pages.yml
 ```
 
-The build adds static `WebApplication` JSON-LD, a free CAD offer and social metadata.
-For initialized jsdyer tools it also adds the canonical CoolCode URL. Forks and the
-uninitialized template do not claim a CoolCode canonical. Review the application
-category in `scripts/build.py` when adapting the tool; the starter is a utility.
-Do not invent ratings or reviews. Search markup does not guarantee a rich result.
-
-For a saved public dataset, pass Dataset objects to `add_search_metadata` from the
-app builder, with actual source attribution, licence, coverage and download URLs.
-Derive counts and dates from the same snapshot used by the app and show those details
-on the page. Keep source edition, retrieval and page-build time distinct. Omit an
-unknown source modification date instead of setting it to the current build time.
-Read the hub's `docs/search-discovery.md` for the release checklist.
+The central homepage, audit, Worker registry, watchdog targets and sitemap are covered by the owner's later integration package; `tool.json` is ready for that review. This app does not need a live API gateway or a new secret.

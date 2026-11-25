@@ -4,6 +4,8 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  schedule:
+    - cron: "47 14 20 * *"
 permissions:
   contents: read
 jobs:
@@ -26,6 +28,9 @@ jobs:
         run: node --test tests/*.test.mjs
       - name: Test the builder
         run: python3 -m unittest discover -s tests -v
+      - name: Refresh validated Statistics Canada spending data
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        run: python3 scripts/refresh.py
       - name: Build the static application
         run: python3 scripts/build.py
       - name: Check whether the tool has been initialized
