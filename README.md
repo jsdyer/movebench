@@ -3,12 +3,14 @@
 [Use Move Bench](https://coolcode.ca/movebench/) to compare job offers, housing, recurring expenses and one-time moving costs. Your financial inputs stay on your device. No account or API key is needed.
 
 <!-- coolcode:guide -->
-Enter actual pay and expenses for your current and proposed places. Move Bench separates the gross-pay change from the expense change, calculates an equivalent gross salary and shows moving-cost recovery. All salary comparisons are before income tax and payroll deductions; provincial household averages appear only as dated context and never fill your budget automatically.
+Enter actual pay and expenses for your current and proposed places. Move Bench separates the gross-pay change from the expense change, calculates an equivalent gross salary and shows moving-cost recovery. All salary comparisons are before income tax and payroll deductions; provincial household averages appear only as dated context and never fill your budget automatically. Vancouver/Halifax place presets preserve your financial entries, and a research checklist links to product prices, groceries, housing, wages and regulated Atlantic fuel limits with their geographic and date limitations.
 <!-- /coolcode:guide -->
 
 ## What it does
 
 - Arbitrary place/scenario names, with Vancouver, Langley and Halifax starting suggestions.
+- Place-pair buttons set city labels and reference provinces without changing any pay, expense or moving assumptions.
+- Five evidence links explain geographic coverage, source periods and unit matching, plus a page-visit research checklist.
 - Annual salary or hourly rate, paid hours and paid weeks. Zero or missing working hours cannot silently produce a meaningful hourly offer.
 - Configurable monthly expense categories, one-time moving cost and a 1–600 month comparison horizon.
 - Gross-pay change, expense change, equivalent annual gross salary and a simple moving-cost recovery period.
@@ -36,7 +38,7 @@ No scenario values or imported files are sent to a server. Explicit storage uses
 
 ## Expand or customize
 
-`web/config.json` controls suggested place names/regions, monthly expense categories and the **explicitly illustrative** example. Visitors may enter any place name. Add a non-overlapping expense category with a unique `id`, `label` and optional `hint`; forms, totals and exports derive from this array. For example, add `pets` and then provide values in any example scenario. Existing imported scenarios missing a required new category must be completed rather than silently assuming zero.
+`web/config.json` controls suggested place names/regions, `place_pairs`, public `research` links, the `research_checklist`, monthly expense categories and the **explicitly illustrative** example. Only place/region fields from presets are applied; even a mistaken financial field in a preset cannot overwrite visitor numbers. Research links open without scenario query parameters; checklist ticks are temporary and not part of saves or exports. Visitors may enter any place name. Add a non-overlapping expense category with a unique `id`, `label` and optional `hint`; forms, totals and exports derive from this array. For example, add `pets` and then provide values in any example scenario. Existing imported scenarios missing a required new category must be completed rather than silently assuming zero.
 
 `references.json` selects exact official table columns and contextual spending categories. Do not interpret provincial averages as local prices or auto-fill the worksheet from them. To change reference coverage, edit that file, run the refresh, review data and tests, then publish. Adding a place label alone needs no source refresh. The snapshot retains actual captured years, with the newest published year displayed for each selected region.
 
@@ -71,4 +73,8 @@ The separate inactivity guard allowlists `pages.yml` and itself. Regenerate afte
 python3 scripts/add_schedule_guard.py --repository jsdyer/movebench .github/workflows/pages.yml
 ```
 
-The central homepage, audit, Worker registry, watchdog targets and sitemap are covered by the owner's later integration package; `tool.json` is ready for that review. This app does not need a live API gateway or a new secret.
+The central homepage, audit, Worker registry, watchdog targets and sitemap use the [CoolCode lifecycle](https://github.com/jsdyer/jsdyer.github.io/blob/main/docs/tool-lifecycle.md). This app does not need a live API gateway or a new secret.
+
+## Research links and geographic limits
+
+The source cards were checked against each tool's documented coverage on 2026-11-26. [Price Atlas](https://coolcode.ca/priceatlas/) and [Pantry Prices](https://coolcode.ca/pantryprices/) provide provincial product/package averages, not city shop quotes. [Housing Pulse](https://coolcode.ca/housing-pulse/) has separately labelled CMA and province series; the card directs users to match dwelling type, quarter and asking/paid-rent population. [Wage Window](https://coolcode.ca/wagewindow/) uses Job Bank occupations and economic regions such as Halifax and Lower Mainland, whose boundaries do not become city limits. [Fuel Window](https://coolcode.ca/fuelwindow/) covers Nova Scotia and PEI regulated limits; it supplies no BC station price. Cards intentionally link to each tool's selector rather than inventing unsupported URL filters or hard-coding prices that age. Users read the actual reference/effective date in the destination and enter their own quotes. These links do not add another collector or schedule.

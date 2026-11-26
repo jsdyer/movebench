@@ -30,3 +30,9 @@ export function validateScenario(value,categories) {
  compareMove(value,categories);return value;
 }
 export function csvCell(value){return '"'+(typeof value==='string' && /^[=+\-@]/.test(value) ? "'"+value : String(value??'')).replaceAll('"','""')+'"';}
+
+export function applyPlacePair(state,pair) {
+ if(!state||!pair)throw new Error('Choose a valid place pair.');
+ for(const side of ['current','proposed'])for(const key of ['place','region'])if(typeof pair[side]?.[key]!=='string'||!pair[side][key].trim()||pair[side][key].length>120)throw new Error('Invalid place pair.');
+ return {...state,current:{...state.current,place:pair.current.place,region:pair.current.region},proposed:{...state.proposed,place:pair.proposed.place,region:pair.proposed.region}};
+}

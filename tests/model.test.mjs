@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {number,annualPay,compareMove,validateScenario,csvCell} from '../web/model.mjs';
+import {number,annualPay,compareMove,validateScenario,csvCell,applyPlacePair} from '../web/model.mjs';
 const cats=[{id:'rent',label:'Rent'},{id:'food',label:'Food'}];
 const place=(pay,rent)=>({place:'Example',region:'',pay,payPeriod:'annual',hours:40,weeks:52,commuteHours:5,costs:{rent,food:500}});
 const state=()=>({schema_version:1,tool:'movebench',current:place(72000,2000),proposed:place(66000,1200),moving:3000,horizon:24});
@@ -14,3 +14,5 @@ test('import schema and place bounds enforced',()=>{assert.equal(validateScenari
 test('CSV avoids formulas without changing numeric negative values',()=>{assert.equal(csvCell('=x'),'"\'=x"');assert.equal(csvCell(-2),'"-2"');});
 
 test('equivalent salary is floored only after moving cost adjustment',()=>{const s=state();s.current=place(12000,3000);s.proposed=place(0,1000);s.moving=1500;s.horizon=12;const r=compareMove(s,cats);assert.equal(r.equivalentSalary,0);assert.equal(r.equivalentSalaryWithMove,0);});
+
+test('place pair preserves all private financial entries and allows an unfinished worksheet',()=>{const before=state();before.current.pay='';before.proposed.costs.food='';const snapshot=JSON.stringify(before);const pair={current:{place:'Vancouver, BC',region:'British Columbia',pay:0,costs:{}},proposed:{place:'Halifax, NS',region:'Nova Scotia',pay:1}};const next=applyPlacePair(before,pair);assert.equal(JSON.stringify(before),snapshot);for(const side of ['current','proposed']){assert.equal(next[side].place,pair[side].place);assert.equal(next[side].region,pair[side].region);for(const key of Object.keys(before[side]).filter(k=>!['place','region'].includes(k)))assert.deepEqual(next[side][key],before[side][key]);}assert.equal(next.moving,before.moving);assert.equal(next.horizon,before.horizon);assert.throws(()=>applyPlacePair(before,{current:{place:'x',region:'x'}}));});

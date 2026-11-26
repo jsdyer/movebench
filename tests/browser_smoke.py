@@ -24,6 +24,20 @@ def main():
     assert 'Illustrative' in page.locator('#example-note').inner_text()
     assert 'Comparison ready' in page.locator('#status').inner_text()
     assert '$70,000' in page.locator('#breakdown').inner_text()
+    amounts=page.locator('input[type=number]').evaluate_all('(nodes)=>Object.fromEntries(nodes.map(n=>[n.id,n.value]))')
+    page.select_option('#place-pair','halifax-vancouver');page.click('#apply-pair')
+    assert page.locator('#current-place').input_value()=='Halifax, NS'
+    assert page.locator('#current-region').input_value()=='Nova Scotia'
+    assert page.locator('#proposed-region').input_value()=='British Columbia'
+    assert page.locator('input[type=number]').evaluate_all('(nodes)=>Object.fromEntries(nodes.map(n=>[n.id,n.value]))')==amounts
+    assert page.locator('#research-links a').count()==5
+    assert 'no BC pump-price coverage' in page.locator('#research-links').inner_text()
+    for link in page.locator('#research-links a').all():
+     assert link.get_attribute('href').startswith('https://coolcode.ca/')
+     assert '?' not in link.get_attribute('href')
+     assert link.get_attribute('rel')=='noopener noreferrer'
+    page.locator('#research-check-0').check()
+    assert page.locator('#research-check-0').is_checked()
     page.locator('#current-place').fill('<img src=x onerror=alert(1)>')
     assert page.locator('#current-label').inner_text()=='<img src=x onerror=alert(1)>'
     assert page.locator('img').count()==0

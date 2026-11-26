@@ -1,5 +1,161 @@
 {
- "places":[{"name":"Vancouver, BC","region":"British Columbia"},{"name":"Langley, BC","region":"British Columbia"},{"name":"Halifax, NS","region":"Nova Scotia"}],
- "costs":[{"id":"housing","label":"Rent / mortgage + housing fees","hint":"Include condo fees or property tax here, if applicable."},{"id":"utilities","label":"Utilities, phone & internet"},{"id":"food","label":"Groceries & eating out"},{"id":"commute","label":"Transport & commuting","hint":"Fuel, transit, insurance, parking and maintenance."},{"id":"care","label":"Child care / health costs"},{"id":"other","label":"Other monthly expenses","hint":"Add recurring costs not already listed."}],
- "example":{"label":"Illustrative Vancouver to Halifax scenario — not market prices","current":{"place":"Vancouver, BC","region":"British Columbia","pay":80000,"payPeriod":"annual","hours":40,"weeks":52,"commuteHours":5,"costs":{"housing":2600,"utilities":230,"food":700,"commute":280,"care":100,"other":400}},"proposed":{"place":"Halifax, NS","region":"Nova Scotia","pay":70000,"payPeriod":"annual","hours":40,"weeks":52,"commuteHours":3,"costs":{"housing":1900,"utilities":250,"food":700,"commute":250,"care":100,"other":400}},"moving":4500,"horizon":24}
+  "places": [
+    {
+      "name": "Vancouver, BC",
+      "region": "British Columbia"
+    },
+    {
+      "name": "Langley, BC",
+      "region": "British Columbia"
+    },
+    {
+      "name": "Halifax, NS",
+      "region": "Nova Scotia"
+    }
+  ],
+  "costs": [
+    {
+      "id": "housing",
+      "label": "Rent / mortgage + housing fees",
+      "hint": "Include condo fees or property tax here, if applicable."
+    },
+    {
+      "id": "utilities",
+      "label": "Utilities, phone & internet"
+    },
+    {
+      "id": "food",
+      "label": "Groceries & eating out"
+    },
+    {
+      "id": "commute",
+      "label": "Transport & commuting",
+      "hint": "Fuel, transit, insurance, parking and maintenance."
+    },
+    {
+      "id": "care",
+      "label": "Child care / health costs"
+    },
+    {
+      "id": "other",
+      "label": "Other monthly expenses",
+      "hint": "Add recurring costs not already listed."
+    }
+  ],
+  "example": {
+    "label": "Illustrative Vancouver to Halifax scenario — not market prices",
+    "current": {
+      "place": "Vancouver, BC",
+      "region": "British Columbia",
+      "pay": 80000,
+      "payPeriod": "annual",
+      "hours": 40,
+      "weeks": 52,
+      "commuteHours": 5,
+      "costs": {
+        "housing": 2600,
+        "utilities": 230,
+        "food": 700,
+        "commute": 280,
+        "care": 100,
+        "other": 400
+      }
+    },
+    "proposed": {
+      "place": "Halifax, NS",
+      "region": "Nova Scotia",
+      "pay": 70000,
+      "payPeriod": "annual",
+      "hours": 40,
+      "weeks": 52,
+      "commuteHours": 3,
+      "costs": {
+        "housing": 1900,
+        "utilities": 250,
+        "food": 700,
+        "commute": 250,
+        "care": 100,
+        "other": 400
+      }
+    },
+    "moving": 4500,
+    "horizon": 24
+  },
+  "place_pairs": [
+    {
+      "id": "vancouver-halifax",
+      "label": "Vancouver → Halifax",
+      "current": {
+        "place": "Vancouver, BC",
+        "region": "British Columbia"
+      },
+      "proposed": {
+        "place": "Halifax, NS",
+        "region": "Nova Scotia"
+      }
+    },
+    {
+      "id": "halifax-vancouver",
+      "label": "Halifax → Vancouver",
+      "current": {
+        "place": "Halifax, NS",
+        "region": "Nova Scotia"
+      },
+      "proposed": {
+        "place": "Vancouver, BC",
+        "region": "British Columbia"
+      }
+    },
+    {
+      "id": "langley-halifax",
+      "label": "Langley → Halifax",
+      "current": {
+        "place": "Langley, BC",
+        "region": "British Columbia"
+      },
+      "proposed": {
+        "place": "Halifax, NS",
+        "region": "Nova Scotia"
+      }
+    }
+  ],
+  "research": [
+    {
+      "title": "Price Atlas",
+      "url": "https://coolcode.ca/priceatlas/",
+      "coverage": "Monthly product prices · BC and Nova Scotia are provincial averages",
+      "instruction": "Compare the same product, package and published month. These are regional transaction averages, not a quote from a Vancouver or Halifax shop."
+    },
+    {
+      "title": "Pantry Prices",
+      "url": "https://coolcode.ca/pantryprices/",
+      "coverage": "Grocery baskets · provincial scanner prices from 2017 where available",
+      "instruction": "Choose the same price series, month and package quantities for both provinces. Historical urban and national tables have different coverage and must remain separate."
+    },
+    {
+      "title": "Housing Pulse",
+      "url": "https://coolcode.ca/housing-pulse/",
+      "coverage": "Housing markets · Vancouver and Halifax census metropolitan areas where published",
+      "instruction": "Compare the same dwelling size and quarter. Asking rents and paid rents describe different groups of homes; use an actual listing or lease for your own housing entry."
+    },
+    {
+      "title": "Wage Window",
+      "url": "https://coolcode.ca/wagewindow/",
+      "coverage": "Job Bank wages · occupation and economic region, including Halifax and Lower Mainland",
+      "instruction": "Select the exact NOC and economic region, then check the wage reference period and annual/hourly unit. A release year is not necessarily the measurement year; enter your actual offer above."
+    },
+    {
+      "title": "Fuel Window",
+      "url": "https://coolcode.ca/fuelwindow/",
+      "coverage": "Regulated fuel limits · Nova Scotia and PEI; no BC pump-price coverage",
+      "instruction": "Choose the correct Nova Scotia pricing zone and effective date. Limits are not live station quotes. For Vancouver, enter your observed local price and trip or commuting costs."
+    }
+  ],
+  "research_checklist": [
+    "I have dated housing quotes for comparable homes, including fees and utilities.",
+    "I have compared grocery packages using the same source, geography level and month.",
+    "I have confirmed each job offer’s paid hours, weeks, benefits and likely payroll deductions.",
+    "I have priced transport, insurance, child care and utilities for the actual address.",
+    "I have separated final moving expenses from refundable deposits and set aside immediate cash needs."
+  ]
 }
